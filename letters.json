@@ -1,0 +1,30 @@
+{
+	"letters": [
+		{ "letter": "A", "percent": 8.34 },
+		{ "letter": "B", "percent": 1.54 },
+		{ "letter": "C", "percent": 2.73 },
+		{ "letter": "D", "percent": 4.14 },
+		{ "letter": "E", "percent": 12.60 },
+		{ "letter": "F", "percent": 2.03 },
+		{ "letter": "G", "percent": 1.92 },
+		{ "letter": "H", "percent": 6.11 },
+		{ "letter": "I", "percent": 6.71 },
+		{ "letter": "J", "percent": 0.23 },
+		{ "letter": "K", "percent": 0.87 },
+		{ "letter": "L", "percent": 4.24 },
+		{ "letter": "M", "percent": 2.53 },
+		{ "letter": "N", "percent": 6.80 },
+		{ "letter": "O", "percent": 7.70 },
+		{ "letter": "P", "percent": 1.66 },
+		{ "letter": "Q", "percent": 0.09 },
+		{ "letter": "R", "percent": 5.68 },
+		{ "letter": "S", "percent": 6.11 },
+		{ "letter": "T", "percent": 9.37 },
+		{ "letter": "U", "percent": 2.85 },
+		{ "letter": "V", "percent": 1.06 },
+		{ "letter": "W", "percent": 2.34 },
+		{ "letter": "X", "percent": 0.20 },
+		{ "letter": "Y", "percent": 2.04 },
+		{ "letter": "Z", "percent": 0.06 }
+	]
+}
