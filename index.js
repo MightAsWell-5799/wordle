@@ -40,16 +40,14 @@ function wordleCrack(goodSet, badSet, lastWord) {
 			})
 			for (let uI = 0; uI < 5; uI++) {
 				if (!currentIndexes.includes(uI)) {
-					
 					badSet.add(lastWord.split("")[uI])
-					
 				}
 			}
 			var secondTier = []
 			var thirdTier = []
 			var fourthTier = []
-            var fifthTier = []
-            
+			var fifthTier = []
+			console.log({ goodSet: goodSet, badSet: badSet })
 			outWords.forEach((word) => {
 				var i = 0
 				if (goodSet.size == 0) {
@@ -65,32 +63,28 @@ function wordleCrack(goodSet, badSet, lastWord) {
 					})
 				}
 			})
-			
-			secondTier.forEach((word) => {
-                var j = 0
-                var wArray = word.word.split("")
-				badSet.forEach((letter) => {
-					
-                    if (!word.word.split("").includes(letter)) {
-                        
-                        j++
 
-                        if (j == badSet.size) {
-						
-                            thirdTier.push(word.word)
+			secondTier.forEach((word) => {
+				var j = 0
+				var wArray = word.word.split("")
+
+				wArray.forEach((value, index) => {
+					if (!badSet.has(value)) {
+						j++
+
+						if (j == 5) {
+							thirdTier.push(word.word)
                         }
-                    } else { 
-                        wArray.forEach((letterW, index) => {
-                            if (letterW == Wordle[index]) {
-                                j++
-                            }
-                            if (j == badSet.size) {
-						
-                                thirdTier.push(word.word)
-                            }
-                        })
-                    }
+                    
+                    } else if (Wordle[index] == value) {
+						j++
+                        //console.log("\n\n\n\n\n\n\n\nnnn")
+						if (j == 5) {
+							thirdTier.push(word.word)
+						}
+					}
 				})
+
 			})
 			thirdTier.forEach((word) => {
 				var k = 0
@@ -116,24 +110,25 @@ function wordleCrack(goodSet, badSet, lastWord) {
 				if (l == 0) {
 					fifthTier.push(word)
 				}
-            })
-            if (fifthTier.length == 0) {
-                console.log("no words found")
-            }
-            if (usedWords.includes(fifthTier[0])) {
-                while (usedWords.includes(fifthTier[0])) {
-                    fifthTier.shift()
-                }
+			})
+			if (fifthTier.length == 0) {
+				console.log("no words found")
+			}
+			if (usedWords.includes(fifthTier[0])) {
+				while (usedWords.includes(fifthTier[0])) {
+					fifthTier.shift()
+				}
+				console.log("use: " + fifthTier[0])
+				rl.close()
+				usedWords.push(fifthTier[0])
+				wordleCrack(goodSet, badSet, fifthTier[0])
+			} else {
+				usedWords.push(fifthTier[0])
                 console.log("use: " + fifthTier[0])
                 rl.close()
-                usedWords.push(fifthTier[0])
-                wordleCrack(goodSet, badSet, fifthTier[0])
-            } else {
-                usedWords.push(fifthTier[0])
-                console.log("use: " + fifthTier[0])
-                rl.close()
-                wordleCrack(goodSet, badSet, fifthTier[0])
-            }
+                
+				wordleCrack(goodSet, badSet, fifthTier[0])
+			}
 		})
 	})
 }
