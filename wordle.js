@@ -121,7 +121,7 @@ var loses = 0
 var badWords = []
 async function game(NewWord, wordIn) {
 	//console.log({wins})
-	if (turn == 7) {
+	if (turn == 6) {
 		loses++
 		badWords.push(wordIn)
 		NewWord = true
@@ -137,8 +137,8 @@ async function game(NewWord, wordIn) {
 		})
 		turn = 0
 		if (wins + loses == Answers.length) {
-            console.log({ wins, loses })
-            console.log(badWords)
+			console.log({ wins, loses })
+			console.log(badWords)
 			process.exit()
 		}
 		if (wins % 100 == 0) {
@@ -159,6 +159,7 @@ async function game(NewWord, wordIn) {
 		if (response == 4) {
 			//console.log("win " + guess)
 			wins++
+			turn = 0
 			await game(true, "")
 		} else {
 			await updateLists(response, firstWord)
@@ -189,7 +190,7 @@ async function game(NewWord, wordIn) {
 		if (response == 4) {
 			//console.log("win " + guess)
 			wins++
-
+			turn = 0
 			await game(true, "")
 		} else {
 			await game(false, wordIn)
