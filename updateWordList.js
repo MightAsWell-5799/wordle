@@ -1,17 +1,15 @@
 const { writeFileSync } = require("fs")
-var words = require("./goodWords.json")
+var apple = require("./old/puzzleWords.json").words.concat(require("./old/validWords.json").words)
 
-
-var totalWords = words.length
+var totalWords = apple.length
 var alphabetMap = new Map()
 //list of all letters in the alphabet
-var alphabet = "abcdefghijklmnopqrstuvwxyz".toUpperCase()
+var alphabet = "abcdefghijklmnopqrstuvwxyz"
 alphabet.split("").forEach(function (letter) {
     alphabetMap.set(letter, new Array(5).fill(0))
 })
-
-words.forEach(function (word) {
-    word.word.split("").forEach(function (letter, index) {
+apple.forEach(function (word) {
+    word.split("").forEach(function (letter, index) {
         var temp = alphabetMap.get(letter)
         temp[index]++
         alphabetMap.set(letter, temp)
@@ -26,22 +24,22 @@ alphabetMap.forEach((value, key) => {
 })
 
 
-
-words.forEach((word) => {
+var dummy = []
+apple.forEach((word) => {
     var i = 0
-    word.word.split("").forEach((letter, index) => {
+    word.split("").forEach((letter, index) => {
         i += alphabetMap.get(letter)[index]
     })
-    word.scorePos = i
+    dummy.push({word: word, scorePos: i})
 
 })
 
 
-console.log(words)
+console.log(dummy)
 
-words.sort(function (a, b) {
+dummy.sort(function (a, b) {
     return b.scorePos - a.scorePos
 })
 
 
-writeFileSync("./goodWords2.json", JSON.stringify(words, null, 2))
+writeFileSync("./goodWords3.json", JSON.stringify(dummy, null, 2))
