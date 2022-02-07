@@ -1,11 +1,13 @@
 const readline = require("readline")
 
-var GuessWords = require("./goodWords3.json")
-var answerWords = require("./puzzleWordsOut.json")
+var GuessWords = require("./goodWords3.json").words
+var answerWords = require("./puzzleWordsOut.json").words
+console.log(GuessWords.length)
 var firstWord = []
 for (let i = 0; i < GuessWords.length; i++) {
 	if (new Set(GuessWords[i].word.split("")).size == 5) {
-		firstWord.push(GuessWords[i])
+        firstWord.push(GuessWords[i])
+        
 	}
 }
 console.log("use: " + firstWord[0].word)
@@ -49,24 +51,23 @@ function wordleCrack(goodSet, badSet, lastWord) {
 				}
 			}
 
-            var returned = filterWords(goodSet, badSet, GuessWords)
-            var finalOut = filterWords(goodSet, badSet, answerWords)
-            if (finalOut.length == 1) {
-                console.log("Use: " + finalOut[0].toUpperCase())
-                return "";
-            }
-
+			var returned = filterWords(goodSet, badSet, GuessWords)
+			var finalOut = filterWords(goodSet, badSet, answerWords)
+			if (finalOut.length == 1) {
+				console.log("Use: " + finalOut[0].toUpperCase())
+				return ""
+			}
 
 			if (returned.length == 0) {
 				console.log("no words found")
 			}
-            if (usedWords.includes(returned[0].toUpperCase())) {
-                while (usedWords.includes(returned[0])) {
-                    fifthTier.shift()
-                }
-                console.log("use: " + returned[0].toUpperCase())
-                rl.close()
-                usedWords.push(returned[0])
+			if (usedWords.includes(returned[0].toUpperCase())) {
+				while (usedWords.includes(returned[0])) {
+					returned.shift()
+				}
+				console.log("use: " + returned[0].toUpperCase())
+				rl.close()
+				usedWords.push(returned[0])
 				wordleCrack(goodSet, badSet, returned[0])
 			} else {
 				usedWords.push(returned[0])
