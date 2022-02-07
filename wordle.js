@@ -117,8 +117,15 @@ unSet.forEach((v, index) => {
 
 var turn = 0
 var wins = 0
+var loses = 0
+var badWords = []
 async function game(NewWord, wordIn) {
 	//console.log({wins})
+	if (turn == 7) {
+		loses++
+		badWords.push(wordIn)
+		NewWord = true
+	}
 	if (NewWord) {
 		goodSet = new Set()
 		badSet = new Set()
@@ -129,9 +136,17 @@ async function game(NewWord, wordIn) {
 			unSet[index] = new Set()
 		})
 		turn = 0
-		var word = Answers[Math.floor(Answers.length * Math.random())].word
+		if (wins + loses == Answers.length) {
+            console.log({ wins, loses })
+            console.log(badWords)
+			process.exit()
+		}
+		if (wins % 100 == 0) {
+			console.log({ wins })
+		}
+		var word = Answers[wins + loses].word
 
-		console.log("new word: " + word)
+		//console.log("new word: " + word)
 		var guess1 = await filterWords(goodSet, badSet, GuessWords)
 		var firstWord
 		for (let i = 0; i < guess1.length; i++) {
@@ -142,8 +157,7 @@ async function game(NewWord, wordIn) {
 		}
 		var response = await check(firstWord, word)
 		if (response == 4) {
-			await sleep(10)
-			console.log("win " + guess)
+			//console.log("win " + guess)
 			wins++
 			await game(true, "")
 		} else {
@@ -154,6 +168,7 @@ async function game(NewWord, wordIn) {
 	} else {
 		var guess1 = await filterWords(goodSet, badSet, GuessWords)
 		var guess
+		var possibilities = await filterWords(goodSet, badSet, Answers)
 
 		if (usedWords.includes(guess1[0])) {
 			while (usedWords.includes(guess1[0])) {
@@ -166,14 +181,13 @@ async function game(NewWord, wordIn) {
 
 			guess = guess1[0]
 		}
-
+		if (possibilities.length < 3) guess = possibilities[0]
 		log({ guess: guess, word: word })
 		var response = await check(guess, wordIn)
 		await updateLists(response, guess)
 		turn++
 		if (response == 4) {
-			await sleep(10)
-			console.log("win " + guess)
+			//console.log("win " + guess)
 			wins++
 
 			await game(true, "")
