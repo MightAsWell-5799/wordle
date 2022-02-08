@@ -5,28 +5,29 @@ function log(string) {
 	if (logging) console.log(string)
 }
 //input is the guess and puzzle is the answer
-const check = async (input, puzzle) => {
+const check = (input, puzzle) => {
 	let results = []
-	if (input == puzzle) return 4
 
-	input.split("").forEach((letter, index) => {
-		if (puzzle[index] === letter) {
-			log(letter + " is correct")
-			results.push(2)
-		} else if (puzzle.includes(letter)) {
-			results.push(1)
-			log(letter + " is close")
-		} else {
-			results.push(0)
-			log(letter + " is wrong")
-		}
-	})
+	if (input == puzzle) return 4
+	try {
+		input.split("").forEach((letter, index) => {
+			if (puzzle[index] === letter) {
+				results.push(2)
+			} else if (puzzle.includes(letter)) {
+				results.push(1)
+			} else {
+				results.push(0)
+			}
+		})
+	} catch (e) {
+		log("puzzle: " + puzzle + " input: " + input + " error: " + e.message)
+		log(input)
+		process.exit(1)
+	}
 	return results
 }
 
-const sleep = (ms = 1500) => new Promise((r) => setTimeout(r, ms))
-
-async function filterWords(goodSet, badSet, words) {
+function filterWords(goodSet, badSet, words) {
 	var secondTier = []
 	var thirdTier = []
 	var fourthTier = []
@@ -93,7 +94,7 @@ async function filterWords(goodSet, badSet, words) {
 	return fifthTier
 }
 
-async function updateLists(response, guess) {
+function updateLists(response, guess) {
 	guess.split("").forEach((letter, index) => {
 		if (response[index] == 2) {
 			Wordle[index] = letter
@@ -119,8 +120,7 @@ var turn = 0
 var wins = 0
 var loses = 0
 var badWords = []
-async function game(NewWord, wordIn) {
-	//console.log({wins})
+function game(NewWord, wordIn) {
 	if (turn == 6) {
 		loses++
 		badWords.push(wordIn)
@@ -142,12 +142,11 @@ async function game(NewWord, wordIn) {
 			process.exit()
 		}
 		if (wins % 100 == 0) {
-			console.log({ wins })
+			log({ wins, loses })
 		}
 		var word = Answers[wins + loses].word
 
-		//console.log("new word: " + word)
-		var guess1 = await filterWords(goodSet, badSet, GuessWords)
+		var guess1 = filterWords(goodSet, badSet, GuessWords)
 		var firstWord
 		for (let i = 0; i < guess1.length; i++) {
 			if (new Set(guess1[i].split("")).size == 5) {
@@ -155,22 +154,27 @@ async function game(NewWord, wordIn) {
 				break
 			}
 		}
-		var response = await check(firstWord, word)
+		var response = check(firstWord, word)
 		if (response == 4) {
-			//console.log("win " + guess)
 			wins++
 			turn = 0
-			await game(true, "")
+			game(true, "")
 		} else {
-			await updateLists(response, firstWord)
+			updateLists(response, firstWord)
 			turn++
-			await game(false, word)
+			game(false, word)
 		}
 	} else {
-		var guess1 = await filterWords(goodSet, badSet, GuessWords)
 		var guess
-		var possibilities = await filterWords(goodSet, badSet, Answers)
-
+		var guess1 = filterWords(goodSet, badSet, GuessWords)
+		var possibilities = filterWords(goodSet, badSet, Answers)
+		var filterGuesses = reduceGuess(goodSet, badSet)
+		if (possibilities.length <= 6 - turn) guess1 = possibilities
+		if (filterGuesses.length > 1 && Wordle.join("").length === 4 && possibilities.length > 6 - turn) guess1 = filterGuesses
+        if (filterGuesses.length > 1 && Wordle.join("").length === 4 && possibilities.length > 6 - turn) {
+            log(`one: ${(filterGuesses.length > 1).toString()} \ntwo: ${Wordle.join("").length === 4} \nthree: ${possibilities.length > 6 - turn}`)
+            process.exit(1)
+        }
 		if (usedWords.includes(guess1[0])) {
 			while (usedWords.includes(guess1[0])) {
 				guess1.shift()
@@ -182,20 +186,55 @@ async function game(NewWord, wordIn) {
 
 			guess = guess1[0]
 		}
-		if (possibilities.length < 3) guess = possibilities[0]
-		log({ guess: guess, word: word })
-		var response = await check(guess, wordIn)
-		await updateLists(response, guess)
+		var response = check(guess, wordIn)
+		updateLists(response, guess)
 		turn++
 		if (response == 4) {
-			//console.log("win " + guess)
 			wins++
 			turn = 0
-			await game(true, "")
+			game(true, "")
 		} else {
-			await game(false, wordIn)
+			game(false, wordIn)
 		}
 	}
 }
 
 game(true, "")
+
+function reduceGuess(badSet, goodSet) {
+	var guess = []
+	var onE = []
+	var openWords = filterWords(goodSet, badSet, Answers)
+	var openWordle = []
+	Wordle.forEach((letter, index) => {
+		if (letter == "") {
+			openWordle.push(index)
+		}
+	})
+	var specialLetters = new Set()
+	openWords.forEach((word) => {
+		specialLetters.add(word.split("")[openWordle])
+	})
+	log({ Wordle, openWords })
+	log(Wordle.join("").length)
+	GuessWords.forEach((word) => {
+		var i = 0
+		;[...new Set(word.word.split(""))].forEach((letter, index) => {
+			if (specialLetters.has(letter)) {
+				i++
+			}
+			if (i == 5) {
+				onE.push(word)
+			}
+		})
+	})
+	guess = [...new Set(onE)]
+		.sort((a, b) => {
+			return b.scorePos - a.scorePos
+		})
+		.map((word) => {
+			return word.word
+		})
+
+	return guess
+}
