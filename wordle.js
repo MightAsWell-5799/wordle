@@ -74,7 +74,7 @@ var issues = [
 	{ word: "night", scorePos: 1 },
 ]
 var GuessWords = require("./goodWords3.json").words
-const logging = true
+const logging = false
 function log(string) {
 	if (logging) console.log(string)
 }
@@ -195,31 +195,15 @@ var wins = 0
 var loses = 0
 var badWords = []
 function game(NewWord, wordIn) {
+    
 	if (turn == 6) {
 		loses++
 		badWords.push(wordIn)
-		NewWord = true
+		return
 	}
+	var word = wordIn.word
 	if (NewWord) {
-		goodSet = new Set()
-		badSet = new Set()
-		Wordle = new Array(5).fill("")
-		unSet = new Array(5).fill("")
-		usedWords = []
-		unSet.forEach((v, index) => {
-			unSet[index] = new Set()
-		})
-		turn = 0
-		if (wins + loses == Answers.length) {
-			console.log({ wins, loses })
-			console.log(badWords)
-			process.exit()
-		}
-		if (wins % 100 == 0) {
-			log({ wins, loses })
-		}
-		var word = Answers[wins + loses].word
-
+		var word = wordIn.word
 		var guess1 = filterWords(goodSet, badSet, GuessWords)
 		var firstWord
 		for (let i = 0; i < guess1.length; i++) {
@@ -227,44 +211,45 @@ function game(NewWord, wordIn) {
 				firstWord = guess1[i]
 				break
 			}
-		}
+        }
+        
 		var response = check(firstWord, word)
 		if (response == 4) {
 			wins++
 			turn = 0
-			game(true, "")
 		} else {
 			updateLists(response, firstWord)
 			turn++
 			game(false, word)
 		}
 	} else {
-        var guess 
-        var guess2 = []
+		var guess
+		var guess2 = []
 		var guess1 = filterWords(goodSet, badSet, GuessWords)
 		var possibilities = filterWords(goodSet, badSet, Answers)
-		var filterGuesses = reduceGuess(goodSet, badSet)
+        var filterGuesses = reduceGuess(goodSet, badSet, possibilities)
 		if (turn == 1) {
 			for (let i = 0; i < guess1.length; i++) {
 				if (new Set(guess1[i].split("")).size == 5) {
 					guess2.push(guess1[i])
 				}
-            }
-            guess1 = guess2
-		}
+			}
+			guess1 = guess2
+        }
+        
+        if (possibilities.length <= 6 - turn) guess1 = possibilities
 
-		if (possibilities.length <= 6 - turn) guess1 = possibilities
-		if (filterGuesses.length > 1 && Wordle.join("").length === 4 && possibilities.length > 6 - turn) guess1 = filterGuesses
+		if (filterGuesses[0].length >= 1 && Wordle.join("").length == 4) {
+			log("extra")
+			guess1.unshift(...filterGuesses[0])
+		}
 
 		if (usedWords.includes(guess1[0])) {
 			while (usedWords.includes(guess1[0])) {
 				guess1.shift()
 			}
-			usedWords.push(guess1[0])
 			guess = guess1[0]
 		} else {
-			usedWords.push(guess1[0])
-
 			guess = guess1[0]
 		}
 		var response = check(guess, wordIn)
@@ -273,43 +258,41 @@ function game(NewWord, wordIn) {
 		if (response == 4) {
 			wins++
 			turn = 0
-			game(true, "")
 		} else {
 			game(false, wordIn)
 		}
 	}
 }
 
-game(true, "")
-
-function reduceGuess(badSet, goodSet) {
+function reduceGuess(badSet, goodSet, possibilities) {
 	var guess = []
 	var onE = []
-	var openWords = filterWords(goodSet, badSet, Answers)
+	var openWords = possibilities
 	var openWordle = []
 	Wordle.forEach((letter, index) => {
 		if (letter == "") {
 			openWordle.push(index)
 		}
-	})
-	var specialLetters = new Set()
-	openWords.forEach((word) => {
-		specialLetters.add(word.split("")[openWordle])
     })
     
-
+	var specialLetters = new Set()
+	openWords.forEach((word) => {
+		openWordle.forEach((index) => {
+			specialLetters.add(word.split("")[index])
+		})
+	})
     
 	GuessWords.forEach((word) => {
 		var i = 0
-		;[...new Set(word.word.split(""))].forEach((letter, index) => {
+        word.word.split("").forEach((letter, index) => {
 			if (specialLetters.has(letter)) {
 				i++
 			}
-			if (specialLetters.length - 1 == i || i == 5) {
+			if (specialLetters.length - 1 == i || i >3) {
 				onE.push(word)
 			}
 		})
-	})
+    })
 	guess = [...new Set(onE)]
 		.sort((a, b) => {
 			return b.scorePos - a.scorePos
@@ -318,5 +301,31 @@ function reduceGuess(badSet, goodSet) {
 			return word.word
 		})
 
-	return guess
+	return [guess, onE, specialLetters, openWords]
 }
+
+
+var forTesting = [
+    { word: "seize" }
+    
+]
+for (let i = 0; i < Answers.length; i++) {
+	var word = Answers[i]
+	game(true, word)
+
+	goodSet = new Set()
+	badSet = new Set()
+	Wordle = new Array(5).fill("")
+	unSet = new Array(5).fill("")
+	usedWords = []
+	unSet.forEach((v, index) => {
+		unSet[index] = new Set()
+	})
+	turn = 0
+	if ((i + 1) % 100 == 0) {
+		console.log({ wins, loses })
+	}
+}
+
+console.log({ wins, loses })
+console.log(badWords)
