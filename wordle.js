@@ -82,7 +82,7 @@ function log(string) {
 const check = (input, puzzle) => {
 	let results = []
 
-	if (input == puzzle) return 4
+    if (input == puzzle) return 4
 	try {
 		input.split("").forEach((letter, index) => {
 			if (puzzle[index] === letter) {
@@ -92,7 +92,8 @@ const check = (input, puzzle) => {
 			} else {
 				results.push(0)
 			}
-		})
+        })
+        log(`${input}\n${results}\n${Wordle}`)
 	} catch (e) {
 		log("puzzle: " + puzzle + " input: " + input + " error: " + e.message)
 		log(input)
@@ -152,7 +153,8 @@ function filterWords(goodSet, badSet, words) {
 				fourthTier.push(word)
 			}
 		})
-	})
+    })
+    log({goodSet, badSet})
 	fourthTier.forEach((word) => {
 		var l = 0
 		word.split("").forEach((letter, index) => {
@@ -171,7 +173,8 @@ function filterWords(goodSet, badSet, words) {
 function updateLists(response, guess) {
 	guess.split("").forEach((letter, index) => {
 		if (response[index] == 2) {
-			Wordle[index] = letter
+            Wordle[index] = letter
+            goodSet.add(letter)
 		} else if (response[index] == 1) {
 			goodSet.add(letter)
 			unSet[index].add(letter)
@@ -192,12 +195,15 @@ unSet.forEach((v, index) => {
 
 var turn = 0
 var wins = 0
+var winz = 0
 var loses = 0
 var badWords = []
 function game(NewWord, wordIn) {
     
-	if (turn == 6) {
-		loses++
+	if (turn == 7) {
+        loses++
+        console.log(winz)
+        winz = 0
 		badWords.push(wordIn)
 		return
 	}
@@ -215,7 +221,8 @@ function game(NewWord, wordIn) {
         
 		var response = check(firstWord, word)
 		if (response == 4) {
-			wins++
+            wins++
+            winz++
 			turn = 0
 		} else {
 			updateLists(response, firstWord)
@@ -239,11 +246,13 @@ function game(NewWord, wordIn) {
         
         if (possibilities.length <= 6 - turn) guess1 = possibilities
 
-		if (filterGuesses[0].length >= 1 && Wordle.join("").length == 4) {
+		if (filterGuesses[0].length >= 1 && Wordle.join("").length >= 3 && possibilities.length > 1) {
 			log("extra")
 			guess1.unshift(...filterGuesses[0])
 		}
-
+        if (turn == 2) {
+            //guess1.unshift(...clearLetters(goodSet, badSet))
+        }
 		if (usedWords.includes(guess1[0])) {
 			while (usedWords.includes(guess1[0])) {
 				guess1.shift()
@@ -257,13 +266,34 @@ function game(NewWord, wordIn) {
 		turn++
 		if (response == 4) {
 			wins++
+            winz++
 			turn = 0
 		} else {
 			game(false, wordIn)
 		}
 	}
 }
-
+function clearLetters(badSet, goodSet) {
+    var outList = []
+    GuessWords.forEach((word) => {
+        var fail = false
+        badSet.forEach((key) => {
+            if (word.word.includes(key)) {
+                fail = true
+            }
+        })
+        goodSet.forEach((key) => {
+            if (word.word.includes(key)) {
+                fail = true
+            }
+        })
+        if (!fail) {
+            outList.push(word.word)
+        }
+    })
+    log(outList)
+    return outList
+}
 function reduceGuess(badSet, goodSet, possibilities) {
 	var guess = []
 	var onE = []
@@ -288,9 +318,10 @@ function reduceGuess(badSet, goodSet, possibilities) {
 			if (specialLetters.has(letter)) {
 				i++
 			}
-			if (specialLetters.length - 1 == i || i >3) {
+			if (specialLetters.length == i || i ==5) {
 				onE.push(word)
-			}
+            }
+            
 		})
     })
 	guess = [...new Set(onE)]
@@ -306,7 +337,7 @@ function reduceGuess(badSet, goodSet, possibilities) {
 
 
 var forTesting = [
-    { word: "seize" }
+    { word: "shame" }
     
 ]
 for (let i = 0; i < Answers.length; i++) {
@@ -327,5 +358,5 @@ for (let i = 0; i < Answers.length; i++) {
 	}
 }
 
-console.log({ wins, loses })
+console.log({ wins, loses, winz })
 console.log(badWords)
