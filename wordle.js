@@ -74,7 +74,7 @@ var issues = [
 	{ word: "night", scorePos: 1 },
 ]
 var GuessWords = require("./goodWords3.json").words
-const logging = false
+const logging = true
 function log(string) {
 	if (logging) console.log(string)
 }
@@ -199,8 +199,8 @@ var winz = 0
 var loses = 0
 var badWords = []
 function game(NewWord, wordIn) {
-    
-	if (turn == 7) {
+    log(turn)
+	if (turn == 6) {
         loses++
         console.log(winz)
         winz = 0
@@ -260,7 +260,8 @@ function game(NewWord, wordIn) {
 			guess = guess1[0]
 		} else {
 			guess = guess1[0]
-		}
+        }
+        log(guess, turn)
 		var response = check(guess, wordIn)
 		updateLists(response, guess)
 		turn++
@@ -337,12 +338,11 @@ function reduceGuess(badSet, goodSet, possibilities) {
 
 
 var forTesting = [
-    { word: "shame" }
-    
+    { word: "ultra" }
 ]
-for (let i = 0; i < Answers.length; i++) {
+for (let i = 0; i < 1; i++) {
 	var word = Answers[i]
-	game(true, word)
+	game(true, forTesting[0])
 
 	goodSet = new Set()
 	badSet = new Set()
